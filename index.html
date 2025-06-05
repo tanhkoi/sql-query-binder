@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Query Binder & Formatter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql-formatter/4.0.2/sql-formatter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-sql.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .columns {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+        .column {
+            width: 600px;
+            flex-shrink: 0;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        .output {
+            background: #2d3748;
+            border: 2px solid #4a5568;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 400px;
+            overflow-x: auto;
+            box-sizing: border-box;
+        }
+        .output pre {
+            margin: 0;
+            padding: 0;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+        }
+        .output code {
+            background: transparent !important;
+            color: #e2e8f0 !important;
+        }
+        .copy-btn {
+            background: #28a745;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        .copy-btn:hover {
+            background: #1e7e34;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .section h3 {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .token.keyword { color: #ff7ac6 !important; font-weight: bold; }
+        .token.function { color: #4dd0e1 !important; }
+        .token.string { color: #a5d6ff !important; }
+        .token.number { color: #ffcb6b !important; }
+        .token.operator { color: #c792ea !important; }
+        .token.punctuation { color: #89ddff !important; }
+        .token.comment { color: #5c6370 !important; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SQL Query Binder & Formatter</h1>
+        
+        <div class="columns">
+            <div class="column">
+                <div class="section">
+                    <h3>Input (Paste SQL + Bind Values):</h3>
+                    <button onclick="processSQL()">Process & Format SQL</button>
+                    <textarea id="input" placeholder="Paste your SQL query and bind line here...
+Example:
+SELECT * FROM users WHERE id = ? AND name = ?
+bind => [123, 'John Doe']"></textarea>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="section">
+                    <h3>Formatted Result:</h3>
+                    <button class="copy-btn" onclick="copyToClipboard('formattedResult')">Copy Formatted</button>
+                    <div id="formattedResult" class="output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function bindQueryFromSingleInput(input) {
+            const lines = input.trim().split('\n');
+            
+            let sqlLines = [];
+            let bindLine = '';
+            let foundBind = false;
+            
+            for (const line of lines) {
+                if (line.includes('bind =>')) {
+                    bindLine = line;
+                    foundBind = true;
+                } else if (!foundBind && line.trim()) {
+                    sqlLines.push(line);
+                }
+            }
+            
+            if (!foundBind) {
+                throw new Error("No bind values found in input");
+            }
+            
+            const sql = sqlLines.join('\n').trim();
+            
+            // More robust parsing of bind values
+            const bindMatch = bindLine.match(/bind\s*=>\s*\[\s*(.*?)\s*\]/);
+            if (!bindMatch) throw new Error("Invalid bind format");
+            
+            // Parse bind values more carefully, handling quotes and commas
+            const bindContent = bindMatch[1];
+            const rawValues = [];
+            let current = '';
+            let inQuotes = false;
+            let quoteChar = '';
+            
+            for (let i = 0; i < bindContent.length; i++) {
+                const char = bindContent[i];
+                
+                if (!inQuotes && (char === "'" || char === '"')) {
+                    inQuotes = true;
+                    quoteChar = char;
+                    current += char;
+                } else if (inQuotes && char === quoteChar) {
+                    inQuotes = false;
+                    current += char;
+                } else if (!inQuotes && char === ',') {
+                    rawValues.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            if (current.trim()) {
+                rawValues.push(current.trim());
+            }
+            
+            let i = 0;
+            const result = sql.replace(/\?/g, () => {
+                if (i >= rawValues.length) throw new Error("Too few values provided");
+                const raw = rawValues[i++];
+                
+                if (raw === 'null') {
+                    return 'NULL';
+                }
+                
+                // Remove outer quotes if present and escape inner quotes
+                let cleanValue = raw;
+                if ((cleanValue.startsWith("'") && cleanValue.endsWith("'")) || 
+                    (cleanValue.startsWith('"') && cleanValue.endsWith('"'))) {
+                    cleanValue = cleanValue.slice(1, -1);
+                }
+                
+                const valueStr = cleanValue.replace(/'/g, "''");
+                return `'${valueStr}'`;
+            });
+            
+            return result;
+        }
+
+        function processSQL() {
+            const input = document.getElementById('input').value;
+            
+            try {
+                const rawResult = bindQueryFromSingleInput(input);
+                
+                // Protect || operators before formatting
+                const protectedSQL = rawResult.replace(/\|\|/g, '__CONCAT_OP__');
+                
+                const formattedResult = sqlFormatter.format(protectedSQL, {
+                    language: 'sql',
+                    tabWidth: 2,
+                    keywordCase: 'upper',
+                    functionCase: 'upper'
+                });
+                
+                // Restore || operators after formatting
+                const finalResult = formattedResult.replace(/__CONCAT_OP__/g, '||');
+                
+                const formattedHighlighted = Prism.highlight(finalResult, Prism.languages.sql, 'sql');
+                document.getElementById('formattedResult').innerHTML = `<pre><code class="language-sql">${formattedHighlighted}</code></pre>`;
+                
+            } catch (error) {
+                document.getElementById('formattedResult').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent || element.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 1000);
+            });
+        }
+
+        document.getElementById('input').value = `SELECT SHOP_CODE, CREATE_DATETIME, CREATE_USER_ID, DELETE_DATETIME, DELETE_FLG, DELETE_USER_ID, SHOP_BUSINESS_STATUS, SHOP_GROUP_CODE, SHOP_NAME, SHOP_SEQ_NUMBER, UPDATE_DATETIME, UPDATE_USER_ID FROM MS_SHOP WHERE (((SHOP_CODE = ?) AND (SHOP_GROUP_CODE = ?)) AND (DELETE_FLG = ?))
+bind => [null, 0002, 0]`;
+    </script>
+</body>
+</html>
