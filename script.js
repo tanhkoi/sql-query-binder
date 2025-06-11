@@ -137,5 +137,10 @@ function resetPage() {
     location.reload();
 }
 
+function resetInput() {
+    document.getElementById('input').value = '';
+    document.getElementById('formattedResult').innerHTML = '';
+}
+
 document.getElementById('input').value = `SELECT SHOP_CODE, CREATE_DATETIME, CREATE_USER_ID, DELETE_DATETIME, DELETE_FLG, DELETE_USER_ID, SHOP_BUSINESS_STATUS, SHOP_GROUP_CODE, SHOP_NAME, SHOP_SEQ_NUMBER, UPDATE_DATETIME, UPDATE_USER_ID FROM MS_SHOP WHERE (((SHOP_CODE = ?) AND (SHOP_GROUP_CODE = ?)) AND (DELETE_FLG = ?))
 bind => [null, 0002, 0]`;
