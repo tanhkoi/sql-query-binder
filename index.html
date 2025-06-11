@@ -1,89 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SQL Query Binder</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql-formatter/4.0.2/sql-formatter.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <div class="main-container">
-            <div class="input-output-pair query-set">
-                <div class="columns">
-                    <div class="column">
-                        <div class="section">
-                            <h3>Ora:</h3>
-                            <div class="buttons">
-                                <button class="btn cp-btn" onclick="pasteSQL(1)" title="Paste">
-                                    <i class="fas fa-paste"></i>
-                                </button>
-                                <button class="btn" onclick="processSQL(1)" title="Process">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                            </div>
-                            <div id="input-editor-1" class="editor-container"></div>
-                        </div>
-                    </div>
-
-                    <div class="column">
-                        <div class="section">
-                            <h3>Result:</h3>
-                            <div class="buttons">
-                                <button class="btn cp-btn" onclick="copyToClipboard(1)" title="Copy">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button class="btn" onclick="resetInput(1)" title="Reset">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                            </div>
-                            <div id="output-editor-1" class="editor-container"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-output-pair query-set">
-                <div class="columns">
-                    <div class="column">
-                        <div class="section">
-                            <h3>Pg:</h3>
-                            <div class="buttons">
-                                <button class="btn cp-btn" onclick="pasteSQL(2)" title="Paste">
-                                    <i class="fas fa-paste"></i>
-                                </button>
-                                <button class="btn" onclick="processSQL(2)" title="Process">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                            </div>
-                            <div id="input-editor-2" class="editor-container"></div>
-                        </div>
-                    </div>
-
-                    <div class="column">
-                        <div class="section">
-                            <h3>Result:</h3>
-                            <div class="buttons">
-                                <button class="btn cp-btn" onclick="copyToClipboard(2)" title="Copy">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button class="btn" onclick="resetInput(2)" title="Reset">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                            </div>
-                            <div id="output-editor-2" class="editor-container"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <header class="main-header">
+        <h1>Binder</h1>
+        <div class="header-buttons">
+          <i
+            onclick="processSQL(1); processSQL(2)"
+            title="Run Both"
+            class="fas fa-play"
+          ></i>
+          <i
+            onclick="resetInput(1); resetInput(2)"
+            title="Reset Both"
+            class="fas fa-undo"
+          ></i>
         </div>
+      </header>
+      <div class="main-container">
+        <div class="input-section">
+          <div class="input-output-pair query-set">
+            <div class="columns">
+              <div class="column">
+                <div class="section">
+                  <div class="buttons">
+                    <h3>Ora:</h3>
+                    <i
+                      onclick="pasteSQL(1)"
+                      title="Paste"
+                      class="fas fa-paste"
+                    ></i>
+                  </div>
+                  <div id="input-editor-1" class="editor-container"></div>
+                </div>
+              </div>
+
+              <div class="column">
+                <div class="section">
+                  <div class="buttons">
+                    <h3>Pg:</h3>
+                    <i
+                      onclick="pasteSQL(2)"
+                      title="Paste"
+                      class="fas fa-paste"
+                    ></i>
+                  </div>
+                  <div id="input-editor-2" class="editor-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="input-output-pair query-set">
+            <div class="columns">
+              <div class="column">
+                <div class="section">
+                  <div id="output-editor-1" class="editor-container">
+                    <button
+                      class="copy-button"
+                      onclick="copyToClipboard(1)"
+                      title="Copy"
+                    >
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column">
+                <div class="section">
+                  <div id="output-editor-2" class="editor-container">
+                    <button
+                      class="copy-button"
+                      onclick="copyToClipboard(2)"
+                      title="Copy"
+                    >
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="script.js"></script>
-</body>
-
+  </body>
 </html>
