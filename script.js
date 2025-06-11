@@ -105,7 +105,97 @@ function getEditors(editorNumber) {
     return null;
 }
 
-function bindQueryFromSingleInput(input) {
+function bindQueryFromSingleInputForORA(input) {
+    const lines = input.trim().split('\n');
+
+    let sqlLines = [];
+    let bindLine = '';
+    let foundBind = false;
+
+    for (const line of lines) {
+        if (line.includes('bind =>')) {
+            bindLine = line;
+            foundBind = true;
+        } else if (!foundBind && line.trim()) {
+            sqlLines.push(line);
+        }
+    }
+
+    if (!foundBind) {
+        throw new Error("No bind values found in input");
+    }
+
+    const sql = sqlLines.join('\n').trim();
+
+    const bindMatch = bindLine.match(/bind\s*=>\s*\[\s*(.*?)\s*\]/);
+    if (!bindMatch) throw new Error("Invalid bind format");
+
+    const bindContent = bindMatch[1];
+    const rawValues = [];
+    let current = '';
+    let inQuotes = false;
+    let quoteChar = '';
+
+    for (let i = 0; i < bindContent.length; i++) {
+        const char = bindContent[i];
+
+        if (!inQuotes && (char === "'" || char === '"')) {
+            inQuotes = true;
+            quoteChar = char;
+            current += char;
+        } else if (inQuotes && char === quoteChar) {
+            inQuotes = false;
+            current += char;
+        } else if (!inQuotes && char === ',') {
+            rawValues.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    if (current.trim()) {
+        rawValues.push(current.trim());
+    }
+
+    let i = 0;
+    const result = sql.replace(/\?/g, () => {
+        if (i >= rawValues.length) throw new Error("Too few values provided");
+        const raw = rawValues[i++];
+
+        if (raw === 'null') {
+            return 'NULL';
+        }
+
+        let cleanValue = raw;
+        if ((cleanValue.startsWith("'") && cleanValue.endsWith("'")) ||
+            (cleanValue.startsWith('"') && cleanValue.endsWith('"'))) {
+            cleanValue = cleanValue.slice(1, -1);
+        }
+
+        // Handle datetime values with TO_TIMESTAMP
+        if (cleanValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/)) {
+            return `TO_TIMESTAMP('${cleanValue}', 'YYYY-MM-DD HH24:MI:SS.FF')`;
+        }
+
+        // Handle numeric values with quotes
+        if (!isNaN(cleanValue)) {
+            return `'${cleanValue}'`;
+        }
+
+        const valueStr = cleanValue.replace(/'/g, "''");
+        return `'${valueStr}'`;
+    });
+
+    // Replace specific conditions for ROWNUM and RNUM
+    const adjustedResult = result
+        .replace(/WHERE ROWNUM <= '(\d+)'/g, "WHERE ROWNUM <= $1")
+        .replace(/WHERE RNUM > '(\d+)'/g, "WHERE RNUM > $1");
+
+    return adjustedResult;
+}
+
+function bindQueryFromSingleInputForPG(input) {
     const lines = input.trim().split('\n');
 
     let sqlLines = [];
@@ -177,7 +267,13 @@ function bindQueryFromSingleInput(input) {
         return `'${valueStr}'`;
     });
 
-    return result;
+    // Adjust LIMIT and OFFSET conditions
+    const adjustedResult = result
+        .replace(/LIMIT '(\d+)'/g, "LIMIT $1")
+        .replace(/OFFSET '(\d+)'/g, "OFFSET $1")
+        .replace(/(\d+)\s*-\s*'(\d+)'/g, "$1 - $2"); // Handle numeric subtraction with strings
+
+    return adjustedResult;
 }
 
 function processSQL(editorNumber) {
@@ -190,7 +286,16 @@ function processSQL(editorNumber) {
     const input = editors.input.getValue();
 
     try {
-        const rawResult = bindQueryFromSingleInput(input);
+        let rawResult;
+
+        // Use the appropriate bindQuery function based on the editor number
+        if (editorNumber === 1) {
+            rawResult = bindQueryFromSingleInputForORA(input);
+        } else if (editorNumber === 2) {
+            rawResult = bindQueryFromSingleInputForPG(input);
+        } else {
+            throw new Error("Unsupported editor number");
+        }
 
         const protectedSQL = rawResult.replace(/\|\|/g, '__CONCAT_OP__');
 
