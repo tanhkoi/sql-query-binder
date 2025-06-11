@@ -9,67 +9,66 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div class="container">
         <h1>SQL Query Binder</h1>
 
-        <!-- First Input/Output Pair -->
-        <div class="input-output-pair">
-            <div class="pair-title">Query Set 1</div>
-            <div class="columns">
-                <div class="column">
-                    <div class="section">
-                        <h3>Input 1:</h3>
-                        <div class="buttons">
-                            <button class="btn cp-btn" onclick="pasteSQL(1)">Paste</button>
-                            <button class="btn" onclick="processSQL(1)">Process</button>
+        <div class="main-container">
+            <div class="input-output-pair query-set">
+                <div class="pair-title">Query Set 1</div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="section">
+                            <h3>Input 1:</h3>
+                            <div class="buttons">
+                                <button class="btn cp-btn" onclick="pasteSQL(1)">Paste</button>
+                                <button class="btn" onclick="processSQL(1)">Process</button>
+                            </div>
+                            <div id="input-editor-1" class="editor-container"></div>
                         </div>
-                        <div id="input-editor-1" class="editor-container"></div>
                     </div>
-                </div>
 
-                <div class="column">
-                    <div class="section">
-                        <h3>Result 1:</h3>
-                        <div class="buttons">
-                            <button class="btn cp-btn" onclick="copyToClipboard(1)">Copy</button>
-                            <button class="btn" onclick="resetInput(1)">Reset</button>
+                    <div class="column">
+                        <div class="section">
+                            <h3>Result 1:</h3>
+                            <div class="buttons">
+                                <button class="btn cp-btn" onclick="copyToClipboard(1)">Copy</button>
+                                <button class="btn" onclick="resetInput(1)">Reset</button>
+                            </div>
+                            <div id="output-editor-1" class="editor-container"></div>
                         </div>
-                        <div id="output-editor-1" class="editor-container"></div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Second Input/Output Pair -->
-        <div class="input-output-pair">
-            <div class="pair-title">Query Set 2</div>
-            <div class="columns">
-                <div class="column">
-                    <div class="section">
-                        <h3>Input 2:</h3>
-                        <div class="buttons">
-                            <button class="btn cp-btn" onclick="pasteSQL(2)">Paste</button>
-                            <button class="btn" onclick="processSQL(2)">Process</button>
+            
+            <div class="input-output-pair query-set">
+                <div class="pair-title">Query Set 2</div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="section">
+                            <h3>Input 2:</h3>
+                            <div class="buttons">
+                                <button class="btn cp-btn" onclick="pasteSQL(2)">Paste</button>
+                                <button class="btn" onclick="processSQL(2)">Process</button>
+                            </div>
+                            <div id="input-editor-2" class="editor-container"></div>
                         </div>
-                        <div id="input-editor-2" class="editor-container"></div>
                     </div>
-                </div>
 
-                <div class="column">
-                    <div class="section">
-                        <h3>Result 2:</h3>
-                        <div class="buttons">
-                            <button class="btn cp-btn" onclick="copyToClipboard(2)">Copy</button>
-                            <button class="btn" onclick="resetInput(2)">Reset</button>
+                    <div class="column">
+                        <div class="section">
+                            <h3>Result 2:</h3>
+                            <div class="buttons">
+                                <button class="btn cp-btn" onclick="copyToClipboard(2)">Copy</button>
+                                <button class="btn" onclick="resetInput(2)">Reset</button>
+                            </div>
+                            <div id="output-editor-2" class="editor-container"></div>
                         </div>
-                        <div id="output-editor-2" class="editor-container"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</body>
 <script src="script.js"></script>
+</body>
 </html>
