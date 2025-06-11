@@ -247,7 +247,7 @@ function showNotification(message) {
 
     setTimeout(() => {
         notification.remove();
-    }, 500);
+    }, 1000);
 }
 
 function pasteSQL(editorNumber) {
