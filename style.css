@@ -16,7 +16,8 @@ body {
 .columns {
     display: flex;
     gap: 20px;
-    align-items: stretch;
+/*     align-items: stretch; */
+    justify-content: space-evenly;
 }
 
 .column {
