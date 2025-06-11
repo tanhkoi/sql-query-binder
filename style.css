@@ -53,6 +53,7 @@ body {
   flex-direction: column;
   height: calc(100vh - 80px);
   gap: 8px;
+  border-top: 1px solid;
 }
 
 .input-section {
@@ -65,6 +66,7 @@ body {
   flex: 1;
   min-height: 200px;
   overflow: hidden;
+  border-top: 1px solid;
 }
 
 .query-set {
