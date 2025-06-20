@@ -104,6 +104,26 @@ bind => [null, 0002, 0]`,
     }
   );
 
+  inputEditor1.addCommand(
+    monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+    function () {
+      let i = document.getElementById("run-button");
+      if (i) {
+        i.click();
+      }
+    }
+  );
+
+  inputEditor2.addCommand(
+    monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+    function () {
+      let i = document.getElementById("run-button");
+      if (i) {
+        i.click();
+      }
+    }
+  );
+
   window.addEventListener("resize", () => {
     inputEditor1.layout();
     outputEditor1.layout();
