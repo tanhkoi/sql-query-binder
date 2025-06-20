@@ -252,7 +252,7 @@ function bindQueryFromSingleInputForPG(input) {
   });
 
   const adjustedResult = result
-  .replace(/!\s*=/g, "!=")
+    .replace(/!\s*=/g, "!=")
     .replace(/LIMIT '(\d+)'/g, "LIMIT $1")
     .replace(/OFFSET '(\d+)'/g, "OFFSET $1")
     .replace(/(\d+)\s*-\s*'(\d+)'/g, "$1 - $2");
@@ -274,12 +274,16 @@ function processSQL(editorNumber) {
   try {
     let rawResult;
 
-    if (editorNumber === 1) {
-      rawResult = bindQueryFromSingleInputForORA(input);
-    } else if (editorNumber === 2) {
-      rawResult = bindQueryFromSingleInputForPG(input);
+    if (input.includes("bind =>")) {
+      if (editorNumber === 1) {
+        rawResult = bindQueryFromSingleInputForORA(input);
+      } else if (editorNumber === 2) {
+        rawResult = bindQueryFromSingleInputForPG(input);
+      } else {
+        throw new Error("Unsupported editor number");
+      }
     } else {
-      throw new Error("Unsupported editor number");
+      rawResult = input;
     }
 
     const protectedSQL = rawResult.replace(/\|\|/g, "__CONCAT_OP__");
