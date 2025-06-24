@@ -245,6 +245,10 @@ function bindQueryFromSingleInputForORA(input) {
     .replace(/RNUM <= '(\d+)'/g, "RNUM <= $1")
     .replace(/rnum >= '(\d+)'/g, "rnum >= $1")
     .replace(/rnum <= '(\d+)'/g, "rnum <= $1")
+    .replace(/rownum >= '(\d+)'/g, "rownum >= $1")
+    .replace(/rownum <= '(\d+)'/g, "rownum <= $1")
+    .replace(/rownum > '(\d+)'/g, "rownum > $1")
+    .replace(/rownum < '(\d+)'/g, "rownum < $1")
     .replace(/(\d+)\s*\+\s*'(\d+)'/g, "$1 + $2");
 
   return adjustedResult;
