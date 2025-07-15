@@ -142,6 +142,13 @@ function getEditors(editorNumber) {
 }
 
 function extractSQLAndBind(input) {
+  const match = input.match(/((SELECT|UPDATE|DELETE|INSERT)[\s\S]+?)\s*bind\s*=>\s*\[([^\]]*)\]/i);
+  if (match) {
+    const sql = match[1].trim();
+    const bindLine = `bind => [${match[3]}]`;
+    return { sql, bindLine };
+  }
+
   const lines = input.trim().split("\n");
   let sqlLines = [];
   let bindLine = "";
