@@ -1,152 +1,85 @@
-let inputEditor1, outputEditor1;
-let inputEditor2, outputEditor2;
+const editorConfig = {
+  common: {
+    language: "sql",
+    theme: "vs",
+    fontSize: 16,
+    fontFamily: "Courier New, monospace",
+    wordWrap: "on",
+    minimap: { enabled: false },
+    scrollBeyondLastLine: false,
+    automaticLayout: true,
+    lineNumbers: "on",
+    folding: true,
+    selectOnLineNumbers: true,
+    roundedSelection: false,
+    cursorStyle: "line",
+    tabSize: 2,
+    insertSpaces: true
+  },
+  input: {
+    value: `SELECT SHOP_CODE, CREATE_DATETIME, CREATE_USER_ID, DELETE_DATETIME, DELETE_FLG, DELETE_USER_ID, SHOP_BUSINESS_STATUS, SHOP_GROUP_CODE, SHOP_NAME, SHOP_SEQ_NUMBER, UPDATE_DATETIME, UPDATE_USER_ID FROM MS_SHOP WHERE (((SHOP_CODE = ?) AND (SHOP_GROUP_CODE = ?)) AND (DELETE_FLG = ?))\nbind => [null, 0002, 0]`,
+    renderLineHighlight: "line",
+    readOnly: false
+  },
+  output: {
+    value: "",
+    renderLineHighlight: "none",
+    readOnly: true
+  }
+};
+
+let editors = {
+  1: { input: null, output: null },
+  2: { input: null, output: null }
+};
 
 require.config({
   paths: {
-    vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs",
-  },
+    vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs"
+  }
 });
-require(["vs/editor/editor.main"], function () {
-  inputEditor1 = monaco.editor.create(
-    document.getElementById("input-editor-1"),
-    {
-      value: `SELECT SHOP_CODE, CREATE_DATETIME, CREATE_USER_ID, DELETE_DATETIME, DELETE_FLG, DELETE_USER_ID, SHOP_BUSINESS_STATUS, SHOP_GROUP_CODE, SHOP_NAME, SHOP_SEQ_NUMBER, UPDATE_DATETIME, UPDATE_USER_ID FROM MS_SHOP WHERE (((SHOP_CODE = ?) AND (SHOP_GROUP_CODE = ?)) AND (DELETE_FLG = ?))
-bind => [null, 0002, 0]`,
-      language: "sql",
-      theme: "vs",
-      fontSize: 16,
-      fontFamily: "Courier New, monospace",
-      wordWrap: "on",
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      automaticLayout: true,
-      lineNumbers: "on",
-      folding: true,
-      renderLineHighlight: "line",
-      selectOnLineNumbers: true,
-      roundedSelection: false,
-      readOnly: false,
-      cursorStyle: "line",
-      tabSize: 2,
-      insertSpaces: true,
-    }
-  );
 
-  outputEditor1 = monaco.editor.create(
-    document.getElementById("output-editor-1"),
-    {
-      value: "",
-      language: "sql",
-      theme: "vs",
-      fontSize: 16,
-      fontFamily: "Courier New, monospace",
-      wordWrap: "on",
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      automaticLayout: true,
-      lineNumbers: "on",
-      folding: true,
-      renderLineHighlight: "none",
-      selectOnLineNumbers: true,
-      roundedSelection: false,
-      readOnly: true,
-      cursorStyle: "line",
-      tabSize: 2,
-      insertSpaces: true,
-    }
-  );
+require(["vs/editor/editor.main"], function() {
+  // Initialize editors
+  Object.keys(editors).forEach(num => {
+    editors[num].input = monaco.editor.create(
+      document.getElementById(`input-editor-${num}`),
+      { ...editorConfig.common, ...editorConfig.input }
+    );
+    
+    editors[num].output = monaco.editor.create(
+      document.getElementById(`output-editor-${num}`),
+      { ...editorConfig.common, ...editorConfig.output }
+    );
 
-  inputEditor2 = monaco.editor.create(
-    document.getElementById("input-editor-2"),
-    {
-      value: "",
-      language: "sql",
-      theme: "vs",
-      fontSize: 16,
-      fontFamily: "Courier New, monospace",
-      wordWrap: "on",
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      automaticLayout: true,
-      lineNumbers: "on",
-      folding: true,
-      renderLineHighlight: "line",
-      selectOnLineNumbers: true,
-      roundedSelection: false,
-      readOnly: false,
-      cursorStyle: "line",
-      tabSize: 2,
-      insertSpaces: true,
-    }
-  );
-
-  outputEditor2 = monaco.editor.create(
-    document.getElementById("output-editor-2"),
-    {
-      value: "",
-      language: "sql",
-      theme: "vs",
-      fontSize: 16,
-      fontFamily: "Courier New, monospace",
-      wordWrap: "on",
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      automaticLayout: true,
-      lineNumbers: "on",
-      folding: true,
-      renderLineHighlight: "none",
-      selectOnLineNumbers: true,
-      roundedSelection: false,
-      readOnly: true,
-      cursorStyle: "line",
-      tabSize: 2,
-      insertSpaces: true,
-    }
-  );
-
-  inputEditor1.addCommand(
-    monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-    function () {
-      let i = document.getElementById("run-button");
-      if (i) {
-        i.click();
-      }
-    }
-  );
-
-  inputEditor2.addCommand(
-    monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-    function () {
-      let i = document.getElementById("run-button");
-      if (i) {
-        i.click();
-      }
-    }
-  );
-
-  window.addEventListener("resize", () => {
-    inputEditor1.layout();
-    outputEditor1.layout();
-    inputEditor2.layout();
-    outputEditor2.layout();
+    // Add Ctrl+Enter command
+    editors[num].input.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+      () => document.getElementById("run-button")?.click()
+    );
   });
+
+  // Handle window resize
+  const handleResize = () => Object.values(editors).forEach(({input, output}) => {
+    input?.layout();
+    output?.layout();
+  });
+  window.addEventListener("resize", handleResize);
 });
 
 function getEditors(editorNumber) {
-  if (editorNumber === 1) {
-    return { input: inputEditor1, output: outputEditor1 };
-  } else if (editorNumber === 2) {
-    return { input: inputEditor2, output: outputEditor2 };
-  }
-  return null;
+  return editors[editorNumber] || null;
 }
 
 function extractSQLAndBind(input) {
-  const match = input.match(/((SELECT|UPDATE|DELETE|INSERT|WITH)[\s\S]+?)\s*bind\s*=>\s*\[([^\]]*)\]/i);
+  const bindRegex = /((SELECT|UPDATE|DELETE|INSERT|WITH)[\s\S]+?)\s*bind\s*=>\s*\[([^\]]*)\]/i;
+  const match = input.match(bindRegex);
+  
   if (match) {
-    const sql = match[1].trim();
-    const bindLine = `bind => [${match[3]}]`;
-    return { sql, bindLine };
+    return {
+      sql: match[1].trim(),
+      bindLine: `bind => [${match[3]}]`
+    };
   }
 
   const lines = input.trim().split("\n");
@@ -163,12 +96,12 @@ function extractSQLAndBind(input) {
     }
   }
 
-  if (!foundBind) {
-    throw new Error("No bind values found in input");
-  }
+  if (!foundBind) throw new Error("No bind values found in input");
 
-  const sql = sqlLines.join("\n").trim();
-  return { sql, bindLine };
+  return {
+    sql: sqlLines.join("\n").trim(),
+    bindLine
+  };
 }
 
 function parseBindValues(bindLine) {
@@ -206,6 +139,28 @@ function parseBindValues(bindLine) {
   return rawValues;
 }
 
+function processValueForORA(raw) {
+  if (raw === "null") return "NULL";
+
+  let cleanValue = raw;
+  if (
+    (cleanValue.startsWith("'") && cleanValue.endsWith("'")) ||
+    (cleanValue.startsWith('"') && cleanValue.endsWith('"'))
+  ) {
+    cleanValue = cleanValue.slice(1, -1);
+  }
+
+  if (cleanValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/)) {
+    return `TO_TIMESTAMP('${cleanValue}', 'YYYY-MM-DD HH24:MI:SS.FF')`;
+  }
+
+  if (!isNaN(cleanValue)) {
+    return `'${cleanValue}'`;
+  }
+
+  return `'${cleanValue.replace(/'/g, "''")}'`;
+}
+
 function bindQueryFromSingleInputForORA(input) {
   const { sql, bindLine } = extractSQLAndBind(input);
   const rawValues = parseBindValues(bindLine);
@@ -213,52 +168,12 @@ function bindQueryFromSingleInputForORA(input) {
   let i = 0;
   const result = sql.replace(/\?/g, () => {
     if (i >= rawValues.length) throw new Error("Too few values provided");
-    const raw = rawValues[i++];
-
-    if (raw === "null") {
-      return "NULL";
-    }
-
-    let cleanValue = raw;
-    if (
-      (cleanValue.startsWith("'") && cleanValue.endsWith("'")) ||
-      (cleanValue.startsWith('"') && cleanValue.endsWith('"'))
-    ) {
-      cleanValue = cleanValue.slice(1, -1);
-    }
-
-    if (cleanValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/)) {
-      return `TO_TIMESTAMP('${cleanValue}', 'YYYY-MM-DD HH24:MI:SS.FF')`;
-    }
-
-    if (!isNaN(cleanValue)) {
-      return `'${cleanValue}'`;
-    }
-
-    const valueStr = cleanValue.replace(/'/g, "''");
-    return `'${valueStr}'`;
+    return processValueForORA(rawValues[i++]);
   });
 
-  const adjustedResult = result
-    .replace(/ROWNUM <= '(\d+)'/g, "ROWNUM <= $1")
-    .replace(/ROWNUM < '(\d+)'/g, "ROWNUM < $1")
-    .replace(/ROWNUM >= '(\d+)'/g, "ROWNUM >= $1")
-    .replace(/ROWNUM > '(\d+)'/g, "ROWNUM > $1")
-    .replace(/RNUM > '(\d+)'/g, "RNUM > $1")
-    .replace(/RNUM < '(\d+)'/g, "RNUM < $1")
-    .replace(/rnum > '(\d+)'/g, "rnum > $1")
-    .replace(/rnum < '(\d+)'/g, "rnum < $1")
-    .replace(/RNUM >= '(\d+)'/g, "RNUM >= $1")
-    .replace(/RNUM <= '(\d+)'/g, "RNUM <= $1")
-    .replace(/rnum >= '(\d+)'/g, "rnum >= $1")
-    .replace(/rnum <= '(\d+)'/g, "rnum <= $1")
-    .replace(/rownum >= '(\d+)'/g, "rownum >= $1")
-    .replace(/rownum <= '(\d+)'/g, "rownum <= $1")
-    .replace(/rownum > '(\d+)'/g, "rownum > $1")
-    .replace(/rownum < '(\d+)'/g, "rownum < $1")
-    .replace(/(\d+)\s*\+\s*'(\d+)'/g, "$1 + $2");
-
-  return adjustedResult;
+  return result
+    .replace(/(ROWNUM|RNUM|rnum|rownum)\s*([<>]=?)\s*'(\d+)'/g, "$1 $2 $3")
+    .replace(/(\d+)\s*[+-]\s*'(\d+)'/g, "$1 $2");
 }
 
 function bindQueryFromSingleInputForPG(input) {
@@ -269,142 +184,107 @@ function bindQueryFromSingleInputForPG(input) {
   const result = sql.replace(/\?/g, () => {
     if (i >= rawValues.length) throw new Error("Too few values provided");
     const raw = rawValues[i++];
-
-    if (raw === "null") {
-      return "NULL";
-    }
-
-    let cleanValue = raw;
-    if (
-      (cleanValue.startsWith("'") && cleanValue.endsWith("'")) ||
-      (cleanValue.startsWith('"') && cleanValue.endsWith('"'))
-    ) {
-      cleanValue = cleanValue.slice(1, -1);
-    }
-
-    const valueStr = cleanValue.replace(/'/g, "''");
-    return `'${valueStr}'`;
+    return raw === "null" ? "NULL" : `'${raw.replace(/'/g, "''")}'`;
   });
 
-  const adjustedResult = result
+  return result
     .replace(/!\s*=/g, "!=")
-    .replace(/LIMIT '(\d+)'/g, "LIMIT $1")
-    .replace(/OFFSET '(\d+)'/g, "OFFSET $1")
+    .replace(/(LIMIT|OFFSET)\s*'(\d+)'/g, "$1 $2")
     .replace(/(\d+)\s*-\s*'(\d+)'/g, "$1 - $2");
-
-  return adjustedResult;
 }
 
 function processSQL(editorNumber) {
-  const editors = getEditors(editorNumber);
-  if (!editors || !editors.input || !editors.output) {
-    alert(
-      `Editors ${editorNumber} are still loading. Please wait a moment and try again.`
-    );
+  const editor = editors[editorNumber];
+  if (!editor?.input || !editor?.output) {
+    alert(`Editors ${editorNumber} are still loading. Please wait and try again.`);
     return;
   }
 
-  const input = editors.input.getValue();
+  const input = editor.input.getValue();
 
   try {
-    let rawResult;
-
-    if (input.includes("bind =>")) {
-      if (editorNumber === 1) {
-        rawResult = bindQueryFromSingleInputForORA(input);
-      } else if (editorNumber === 2) {
-        rawResult = bindQueryFromSingleInputForPG(input);
-      } else {
-        throw new Error("Unsupported editor number");
-      }
-    } else {
-      rawResult = input;
-    }
+    let rawResult = input.includes("bind =>")
+      ? editorNumber === 1
+        ? bindQueryFromSingleInputForORA(input)
+        : bindQueryFromSingleInputForPG(input)
+      : input;
 
     const protectedSQL = rawResult.replace(/\|\|/g, "__CONCAT_OP__");
-
     const formattedResult = sqlFormatter.format(protectedSQL, {
       language: "sql",
       tabWidth: 2,
       keywordCase: "upper",
-      functionCase: "upper",
+      functionCase: "upper"
     });
 
-    const finalResult = formattedResult.replace(/__CONCAT_OP__/g, "||");
-
-    editors.output.setValue(finalResult);
+    editor.output.setValue(formattedResult.replace(/__CONCAT_OP__/g, "||"));
   } catch (error) {
-    editors.output.setValue("Error: " + error.message);
+    editor.output.setValue(`Error: ${error.message}`);
   }
 }
 
-function copyToClipboard(editorNumber) {
-  const editors = getEditors(editorNumber);
-  if (!editors || !editors.output) {
+async function copyToClipboard(editorNumber) {
+  const editor = editors[editorNumber];
+  if (!editor?.output) {
     alert(`Output editor ${editorNumber} is not ready yet.`);
     return;
   }
 
-  const text = editors.output.getValue();
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      showNotification(`Result ${editorNumber} copied to clipboard!`);
-    })
-    .catch(() => {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      showNotification(`Result ${editorNumber} copied to clipboard!`);
-    });
+  const text = editor.output.getValue();
+  try {
+    await navigator.clipboard.writeText(text);
+    showNotification(`Result ${editorNumber} copied to clipboard!`);
+  } catch {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+    showNotification(`Result ${editorNumber} copied to clipboard!`);
+  }
 }
 
 function showNotification(message) {
   const notification = document.createElement("div");
   notification.textContent = message;
-  notification.style.position = "fixed";
-  notification.style.bottom = "20px";
-  notification.style.right = "20px";
-  notification.style.backgroundColor = "#28a745";
-  notification.style.color = "white";
-  notification.style.padding = "10px 20px";
-  notification.style.borderRadius = "5px";
-  notification.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
-  notification.style.zIndex = "1000";
+  Object.assign(notification.style, {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    backgroundColor: "#28a745",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: "5px",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+    zIndex: "1000"
+  });
   document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.remove();
-  }, 1000);
+  setTimeout(() => notification.remove(), 1000);
 }
 
-function pasteSQL(editorNumber) {
-  const editors = getEditors(editorNumber);
-  if (!editors || !editors.input) {
+async function pasteSQL(editorNumber) {
+  const editor = editors[editorNumber];
+  if (!editor?.input) {
     alert(`Input editor ${editorNumber} is not ready yet.`);
     return;
   }
 
-  navigator.clipboard
-    .readText()
-    .then((text) => {
-      editors.input.setValue(text);
-    })
-    .catch(() => {
-      alert("Failed to paste. Please allow clipboard access.");
-    });
+  try {
+    const text = await navigator.clipboard.readText();
+    editor.input.setValue(text);
+  } catch {
+    alert("Failed to paste. Please allow clipboard access.");
+  }
 }
 
 function resetInput(editorNumber) {
-  const editors = getEditors(editorNumber);
-  if (!editors || !editors.input || !editors.output) {
+  const editor = editors[editorNumber];
+  if (!editor?.input || !editor?.output) {
     alert(`Editors ${editorNumber} are not ready yet.`);
     return;
   }
 
-  editors.input.setValue("");
-  editors.output.setValue("");
+  editor.input.setValue("");
+  editor.output.setValue("");
 }
